@@ -56,13 +56,23 @@ task copyConfig(type: Copy) {
     into "$buildDir/libs/configs"
 }
 
-task copyLibs(type: Copy){
+task copyRuntimeLibs(type: Copy){
 	from configurations.runtime
+    into "runtime-lib"
+}
+
+task copyLibs(type: Copy){
+	from "runtime-lib"
     into "$buildDir/libs/lib"
 }
 
+
 //build đầy đủ
 task fatBuild(type: Copy, dependsOn: ["jar", "copySrc", "copyConfig", "copyCmd", "copyLibs"]) {
+	description 'Build jar, copy web source, config and run bath file'
+}
+
+task fatBuildLocal(type: Copy, dependsOn: ["jar", "copySrc", "copyConfig", "copyCmd", "copyRuntimeLibs", "copyLibs"]) {
 	description 'Build jar, copy web source, config and run bath file'
 }
 
