@@ -72,7 +72,7 @@ task fatBuild(type: Copy, dependsOn: ["jar", "copySrc", "copyConfig", "copyCmd",
 	description 'Build jar, copy web source, config and run bath file'
 }
 
-task fatBuildLocal(type: Copy, dependsOn: ["jar", "copySrc", "copyConfig", "copyCmd", "copyRuntimeLibs", "copyLibs"]) {
+task buildLocal(type: Copy, dependsOn: ["jar", "copySrc", "copyConfig", "copyCmd", "copyRuntimeLibs", "copyLibs"]) {
 	description 'Build jar, copy web source, config and run bath file'
 }
 
