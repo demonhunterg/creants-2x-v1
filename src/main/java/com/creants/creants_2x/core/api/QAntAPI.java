@@ -107,6 +107,9 @@ public class QAntAPI implements IQAntApi {
 
 	@Override
 	public QAntUser login(Channel sender, String token, String zoneName, IQAntObject outParams, boolean forceLogout) {
+		QAntTracer.info(this.getClass(), "Do login [token: " + token + ", $FS_NEW_LOGIN_NAME:"
+				+ outParams.getUtfString("$FS_NEW_LOGIN_NAME") + ", zoneName:" + zoneName + "]");
+
 		if (!qant.getChannelManager().containsChannel(sender)) {
 			QAntTracer.warn(this.getClass(), "Login failed: " + token + " , channel is already expired!");
 			return null;
