@@ -25,7 +25,6 @@ import com.creants.creants_2x.core.exception.QAntErrorCode;
 import com.creants.creants_2x.core.exception.QAntErrorData;
 import com.creants.creants_2x.core.exception.QAntJoinRoomException;
 import com.creants.creants_2x.core.exception.QAntRuntimeException;
-import com.creants.creants_2x.core.service.WebService;
 import com.creants.creants_2x.core.setting.CreateRoomSettings;
 import com.creants.creants_2x.core.util.QAntTracer;
 import com.creants.creants_2x.socket.gate.entities.IQAntArray;
@@ -37,15 +36,14 @@ import com.creants.creants_2x.socket.io.Response;
 import com.creants.creants_2x.socket.managers.IUserManager;
 
 import io.netty.channel.Channel;
-import net.sf.json.JSONObject;
 
 /**
  * @author LamHa
  *
  */
 public class QAntAPI implements IQAntApi {
-	private static final byte SYSTEM_CONTROLLER = 0;
-	private static final String NAME_BY_SERVER = "$FS_NAME_BY_SERVER";
+	public static final byte SYSTEM_CONTROLLER = 0;
+	public static final String NEW_LOGIN_NAME = "$FS_NEW_LOGIN_NAME";
 	protected final QAntServer qant;
 	protected final IUserManager globalUserManager;
 	protected final IResponseApi responseAPI;
@@ -106,9 +104,9 @@ public class QAntAPI implements IQAntApi {
 
 
 	@Override
-	public QAntUser login(Channel sender, String token, String zoneName, IQAntObject outParams, boolean forceLogout) {
-		QAntTracer.info(this.getClass(), "Do login [token: " + token + ", $FS_NEW_LOGIN_NAME:"
-				+ outParams.getUtfString("$FS_NEW_LOGIN_NAME") + ", zoneName:" + zoneName + "]");
+	public QAntUser login(Channel sender, String token, String zoneName, IQAntObject paramsOut, boolean forceLogout) {
+		QAntTracer.info(this.getClass(), "Do login [token: " + token + ", " + NEW_LOGIN_NAME + ":"
+				+ paramsOut.getUtfString(NEW_LOGIN_NAME) + ", zoneName:" + zoneName + "]");
 
 		if (!qant.getChannelManager().containsChannel(sender)) {
 			QAntTracer.warn(this.getClass(), "Login failed: " + token + " , channel is already expired!");
@@ -138,60 +136,31 @@ public class QAntAPI implements IQAntApi {
 			return null;
 		}
 
+		Long userId = paramsOut.getLong("creantUserId");
 		QAntUser user = new QAntUser(sender);
 		user.updateLastRequestTime();
 		user.setConnected(true);
-		String verify = null;
-		try {
-			verify = WebService.getInstance().verify(token);
-		} catch (Exception e) {
-			sendError(zoneName, response, QAntErrorCode.GRAPH_API_FAIL);
-			QAntTracer.error(this.getClass(),
-					"Bad login request, Zone: " + zoneName + ", reason:" + QAntErrorCode.GRAPH_API_FAIL.getName()
-							+ ". Requested by: " + sender + "\n" + QAntTracer.getTraceMessage(e));
-			return null;
-		}
-
-		JSONObject jo = JSONObject.fromObject(verify);
-		int code = jo.getInt("code");
-		if (code != 1) {
-			sendError(zoneName, response, QAntErrorCode.TOKEN_EXPIRED);
-			QAntTracer.debug(this.getClass(), "Bad login request, Zone: " + zoneName + ", reason:"
-					+ QAntErrorCode.TOKEN_EXPIRED.getName() + ". Requested by: " + sender + "/token: " + token);
-			return null;
-		}
-		JSONObject userInfo = jo.getJSONObject("data");
-		long userId = userInfo.getLong("userId");
 		user.setCreantsUserId(userId);
 
-		Boolean nameByServer = outParams.getBool(NAME_BY_SERVER);
-		if (nameByServer) {
-			user.setName(zoneName + "#" + userId);
-		} else {
-			if (outParams != null) {
-				String newUserName = outParams.getUtfString("$FS_NEW_LOGIN_NAME");
-				if (newUserName != null) {
-					user.setName(newUserName);
-				}
-			}
+		String newUserName = paramsOut.getUtfString(NEW_LOGIN_NAME);
+		if (newUserName != null) {
+			user.setName(newUserName);
+		}
 
-			if (user.getName() == null) {
-				user.setName("user_" + userId);
-			}
+		if (user.getName() == null) {
+			user.setName("user_" + userId);
 		}
 
 		zone.login(user);
 
-		resObj.putUtfString("tk", token);
-		resObj.putUtfString("fn", userInfo.getString("fullName"));
-		resObj.putUtfString("avt", userInfo.getString("avatar"));
-		resObj.putUtfString("un", user.getName());
-		resObj.putLong("mn", userInfo.getLong("money"));
 		resObj.putLong("uid", userId);
-		resObj.putQAntObject("p", outParams);
+		resObj.putUtfString("un", user.getName());
+		resObj.putUtfString("zn", zoneName);
+
+		if (paramsOut != null && paramsOut.size() > 0) {
+			resObj.putQAntObject("p", paramsOut);
+		}
 		response.write();
-		user.setAvatar(userInfo.getString("avatar"));
-		user.setFullName(userInfo.getString("fullName"));
 
 		Map<IQAntEventParam, Object> evtParams = new HashMap<IQAntEventParam, Object>();
 		evtParams.put(QAntEventParam.ZONE, zone);
