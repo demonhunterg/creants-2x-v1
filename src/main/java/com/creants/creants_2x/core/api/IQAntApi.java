@@ -8,6 +8,7 @@ import com.creants.creants_2x.core.entities.Room;
 import com.creants.creants_2x.core.entities.Zone;
 import com.creants.creants_2x.core.entities.match.MatchExpression;
 import com.creants.creants_2x.core.exception.QAntCreateRoomException;
+import com.creants.creants_2x.core.exception.QAntException;
 import com.creants.creants_2x.core.exception.QAntJoinRoomException;
 import com.creants.creants_2x.core.setting.CreateRoomSettings;
 import com.creants.creants_2x.socket.gate.entities.IQAntObject;
@@ -37,10 +38,11 @@ public interface IQAntApi {
 	 * @param user
 	 */
 
-	QAntUser login(Channel channel, String token, String zoneName, IQAntObject params);
+	QAntUser login(Channel channel, String userName, String password, String zoneName, IQAntObject params);
 
 
-	QAntUser login(Channel channel, String token, String zoneName, IQAntObject params, boolean forceLogout);
+	QAntUser login(Channel channel, String userName, String password, String zoneName, IQAntObject params,
+			boolean forceLogout);
 
 
 	/**
@@ -69,6 +71,17 @@ public interface IQAntApi {
 
 
 	QAntUser getUserByChannel(Channel channel);
+
+
+	/**
+	 * @param userName
+	 * @param zone
+	 * @param forceLogin
+	 *            <code>TRUE<code> nếu muốn đá user đã tồn tại cùng username
+	 * @return
+	 * @throws QAntException
+	 */
+	QAntUser createNPC(String userName, Zone zone, boolean forceLogin) throws QAntException;
 
 
 	Room createRoom(Zone zone, CreateRoomSettings roomSetting, QAntUser user) throws QAntCreateRoomException;

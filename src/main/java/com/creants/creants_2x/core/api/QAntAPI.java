@@ -23,6 +23,7 @@ import com.creants.creants_2x.core.entities.match.MatchingUtils;
 import com.creants.creants_2x.core.exception.QAntCreateRoomException;
 import com.creants.creants_2x.core.exception.QAntErrorCode;
 import com.creants.creants_2x.core.exception.QAntErrorData;
+import com.creants.creants_2x.core.exception.QAntException;
 import com.creants.creants_2x.core.exception.QAntJoinRoomException;
 import com.creants.creants_2x.core.exception.QAntRuntimeException;
 import com.creants.creants_2x.core.setting.CreateRoomSettings;
@@ -43,7 +44,6 @@ import io.netty.channel.Channel;
  */
 public class QAntAPI implements IQAntApi {
 	public static final byte SYSTEM_CONTROLLER = 0;
-	public static final String NEW_LOGIN_NAME = "$FS_NEW_LOGIN_NAME";
 	protected final QAntServer qant;
 	protected final IUserManager globalUserManager;
 	protected final IResponseApi responseAPI;
@@ -98,18 +98,17 @@ public class QAntAPI implements IQAntApi {
 
 
 	@Override
-	public QAntUser login(Channel sender, String token, String zoneName, IQAntObject params) {
-		return login(sender, token, zoneName, params, false);
+	public QAntUser login(Channel sender, String userName, String password, String zoneName, IQAntObject params) {
+		return login(sender, userName, password, zoneName, params, false);
 	}
 
 
 	@Override
-	public QAntUser login(Channel sender, String token, String zoneName, IQAntObject paramsOut, boolean forceLogout) {
-		QAntTracer.info(this.getClass(), "Do login [token: " + token + ", " + NEW_LOGIN_NAME + ":"
-				+ paramsOut.getUtfString(NEW_LOGIN_NAME) + ", zoneName:" + zoneName + "]");
+	public QAntUser login(Channel sender, String userName, String password, String zoneName, IQAntObject paramsOut,
+			boolean forceLogout) {
 
 		if (!qant.getChannelManager().containsChannel(sender)) {
-			QAntTracer.warn(this.getClass(), "Login failed: " + token + " , channel is already expired!");
+			QAntTracer.warn(this.getClass(), "Login failed: " + userName + " , channel is already expired!");
 			return null;
 		}
 
@@ -136,24 +135,20 @@ public class QAntAPI implements IQAntApi {
 			return null;
 		}
 
-		Long userId = paramsOut.getLong("creantUserId");
 		QAntUser user = new QAntUser(sender);
 		user.updateLastRequestTime();
+		user.setName(userName);
 		user.setConnected(true);
-		user.setCreantsUserId(userId);
+		user.setFullName(paramsOut.getUtfString("fn"));
 
-		String newUserName = paramsOut.getUtfString(NEW_LOGIN_NAME);
-		if (newUserName != null) {
-			user.setName(newUserName);
-		}
-
-		if (user.getName() == null) {
-			user.setName("user_" + userId);
+		Long userId = paramsOut.getLong("creantUserId");
+		if (userId != null) {
+			user.setCreantsUserId(userId);
+			resObj.putLong("uid", userId);
 		}
 
 		zone.login(user);
 
-		resObj.putLong("uid", userId);
 		resObj.putUtfString("un", user.getName());
 		resObj.putUtfString("zn", zoneName);
 
@@ -590,6 +585,12 @@ public class QAntAPI implements IQAntApi {
 		}
 
 		response.write();
+	}
+
+
+	@Override
+	public QAntUser createNPC(String userName, Zone zone, boolean forceLogin) throws QAntException {
+		return null;
 	}
 
 

@@ -12,7 +12,6 @@ import com.creants.creants_2x.core.controllers.BaseControllerCommand;
 import com.creants.creants_2x.core.controllers.SystemRequest;
 import com.creants.creants_2x.core.entities.Zone;
 import com.creants.creants_2x.core.exception.QAntRequestValidationException;
-import com.creants.creants_2x.core.util.QAntTracer;
 import com.creants.creants_2x.socket.gate.entities.IQAntObject;
 import com.creants.creants_2x.socket.gate.entities.QAntObject;
 import com.creants.creants_2x.socket.io.IRequest;
@@ -22,9 +21,9 @@ import com.creants.creants_2x.socket.io.IRequest;
  *
  */
 public class Login extends BaseControllerCommand {
-	private static final String TOKEN = "tk";
-	private static final String ZONE_NAME = "zid";
-	private static final String REQUEST_LOGIN_DATA_OUT = "$FS_REQUEST_LOGIN_DATA_OUT";
+	public static final String ZONE_NAME = "zn";
+	public static final String REQUEST_LOGIN_DATA_OUT = "$FS_REQUEST_LOGIN_DATA_OUT";
+	public static final String NEW_LOGIN_NAME = "$FS_NEW_LOGIN_NAME";
 
 
 	public Login() {
@@ -33,35 +32,43 @@ public class Login extends BaseControllerCommand {
 
 
 	@Override
-	public void execute(IRequest request) throws Exception {
+	public void execute(IRequest request) throws QAntRequestValidationException {
 		IQAntObject reqObj = request.getContent();
-		String token = reqObj.getUtfString(TOKEN);
 		String zoneName = reqObj.getUtfString(ZONE_NAME);
-		if (zoneName == null) {
-			zoneName = "mus1";
-			QAntTracer.warn(this.getClass(), "required zone name. token=" + token);
-		}
+		String userName = reqObj.getUtfString("un");
+		String password = reqObj.getUtfString("pw");
 
 		IQAntObject params = (IQAntObject) request.getAttribute(REQUEST_LOGIN_DATA_OUT);
-		api.login(request.getSender(), token, zoneName, params);
+		if (params != null) {
+			String newUserName = params.getUtfString(NEW_LOGIN_NAME);
+			if (newUserName != null) {
+				userName = newUserName;
+			}
+		}
+		api.login(request.getSender(), userName, password, zoneName, params);
 	}
 
 
 	@Override
 	public boolean validate(IRequest request) throws Exception {
 		IQAntObject params = request.getContent();
-		if (params == null || !params.containsKey(TOKEN))
-			return false;
+		validateFormalParameters(params);
 
 		String zoneName = params.getUtfString(ZONE_NAME);
-		if (zoneName == null)
-			zoneName = "mus1";
 		Zone zone = qant.getZoneManager().getZoneByName(zoneName);
 		return customLogin(params, request, zone);
 	}
 
 
-	protected boolean customLogin(IQAntObject param, IRequest request, Zone zone)
+	protected void validateFormalParameters(final IQAntObject qanto) throws QAntRequestValidationException {
+		if (!qanto.containsKey("un") || !qanto.containsKey("pw") || !qanto.containsKey("zn")) {
+			throw new QAntRequestValidationException(
+					"Bad Login Request. Essential parameters are missing. Client API is probably fake.");
+		}
+	}
+
+
+	protected boolean customLogin(IQAntObject params, IRequest request, Zone zone)
 			throws QAntRequestValidationException {
 
 		boolean res = true;
@@ -78,7 +85,9 @@ public class Login extends BaseControllerCommand {
 			Map<IQAntEventParam, Object> userParams = new HashMap<IQAntEventParam, Object>();
 			userParams.put(QAntEventParam.ZONE, zone);
 			userParams.put(QAntEventParam.SESSION, request.getSender());
-			userParams.put(QAntEventParam.LOGIN_IN_DATA, param.getQAntObject("p"));
+			userParams.put(QAntEventParam.LOGIN_NAME, params.getUtfString("un"));
+			userParams.put(QAntEventParam.LOGIN_PASSWORD, params.getUtfString("pw"));
+			userParams.put(QAntEventParam.LOGIN_IN_DATA, params.getQAntObject("p"));
 
 			IQAntObject paramsOut = QAntObject.newInstance();
 			request.setAttribute(REQUEST_LOGIN_DATA_OUT, paramsOut);

@@ -4,6 +4,7 @@ import java.net.SocketAddress;
 
 import org.apache.log4j.PropertyConfigurator;
 
+import com.creants.creants_2x.core.AdminToolService;
 import com.creants.creants_2x.core.IQAntEventManager;
 import com.creants.creants_2x.core.IServiceProvider;
 import com.creants.creants_2x.core.QAntEventManager;
@@ -56,6 +57,7 @@ public class QAntServer {
 	private MessageHandler messageHandler;
 	private SystemHandlerManager systemHandlerManager;
 	private APIManager apiManager;
+	private IService adminToolService;
 	private IUserManager userManager;
 	private IQAntEventManager eventManager;
 	private IChannelManager channelManager;
@@ -162,6 +164,7 @@ public class QAntServer {
 		try {
 			(zoneManager = new QAntZoneManager()).init(null);
 			zoneManager.initializeZones();
+			(adminToolService = (IService) new AdminToolService()).init(null);
 		} catch (QAntException e) {
 			QAntTracer.error(this.getClass(), "initializeZones fail! ", QAntTracer.getTraceMessage(e));
 		}

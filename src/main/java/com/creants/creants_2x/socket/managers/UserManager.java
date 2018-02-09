@@ -87,11 +87,11 @@ public class UserManager implements IUserManager {
 
 	@Override
 	public void removeUser(int userId) {
-		final QAntUser user = usersById.get(userId);
+		QAntUser user = usersById.get(userId);
 		if (user == null) {
 			QAntTracer.warn(this.getClass(), "Can't remove user with ID: " + userId + ". User was not found.");
 		} else {
-			this.removeUser(user);
+			removeUser(user);
 		}
 	}
 
@@ -229,13 +229,13 @@ public class UserManager implements IUserManager {
 
 	@Override
 	public void disconnectUser(QAntUser user) {
-		this.removeUser(user);
+		removeUser(user);
 	}
 
 
 	@Override
 	public int getHighestCCU() {
-		return this.highestCCU;
+		return highestCCU;
 	}
 
 

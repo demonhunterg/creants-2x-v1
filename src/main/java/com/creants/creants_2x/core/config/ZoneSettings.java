@@ -29,6 +29,9 @@ public class ZoneSettings implements Serializable {
 	@JacksonXmlProperty(localName = "ExtensionSettings")
 	public ExtensionSettings extension;
 
+	@JacksonXmlProperty(localName = "key")
+	private String licensekey;
+
 	static {
 		idGenerator = new AtomicInteger(0);
 	}
@@ -43,7 +46,6 @@ public class ZoneSettings implements Serializable {
 		this.rooms = new ArrayList<RoomSettings>();
 		this.extension = new ExtensionSettings();
 		this.initId();
-
 	}
 
 
@@ -148,6 +150,11 @@ public class ZoneSettings implements Serializable {
 			this.propertiesFile = "";
 			this.reloadMode = "AUTO";
 		}
+	}
+
+
+	public String getLicensekey() {
+		return licensekey;
 	}
 
 }
