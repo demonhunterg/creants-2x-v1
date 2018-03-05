@@ -1,5 +1,7 @@
 package com.creants.creants_2x.core.controllers;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.creants.creants_2x.QAntServer;
 import com.creants.creants_2x.core.entities.Room;
 import com.creants.creants_2x.core.entities.Zone;
@@ -53,7 +55,7 @@ public class ExtensionController extends AbstractController {
 		QAntTracer.debug(this.getClass(), reqObj.getDump());
 
 		String cmd = reqObj.getUtfString(KEY_EXT_CMD);
-		if (cmd == null || cmd.length() == 0) {
+		if (StringUtils.isBlank(cmd)) {
 			QAntTracer.warn(this.getClass(), "Extension Request refused. Missing CMD. " + sender);
 			return;
 		}
