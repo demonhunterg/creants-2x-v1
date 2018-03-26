@@ -26,7 +26,6 @@ public class QAntUser implements IQAntUser {
 	private static final AttributeKey<Long> LAST_REQUEST_TIME = AttributeKey.valueOf("last.request.time");
 	private long sessionId;
 	private int userId;
-	private long creantsUserId;
 	private long createTime;
 	private String name;
 	private String fullName;
@@ -138,16 +137,6 @@ public class QAntUser implements IQAntUser {
 
 	public void removeCreatedRoom(Room room) {
 
-	}
-
-
-	public long getCreantsUserId() {
-		return creantsUserId;
-	}
-
-
-	public void setCreantsUserId(long creantsUserId) {
-		this.creantsUserId = creantsUserId;
 	}
 
 

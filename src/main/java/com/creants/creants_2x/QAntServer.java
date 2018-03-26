@@ -52,6 +52,10 @@ import io.netty.util.concurrent.GenericFutureListener;
  * @author LamHM
  *
  */
+/**
+ * @author LamHM
+ *
+ */
 public class QAntServer {
 	private static QAntServer instance;
 	private MessageHandler messageHandler;
@@ -151,6 +155,11 @@ public class QAntServer {
 	}
 
 
+	public void stop() {
+
+	}
+
+
 	private void initialize() {
 		qantConfig = new QAntConfig();
 		channelManager = DefaultChannelManager.getInstance();
@@ -240,6 +249,11 @@ public class QAntServer {
 
 	public IConfigurator getConfigurator() {
 		return qantConfig;
+	}
+
+
+	public IService getAdminToolService() {
+		return adminToolService;
 	}
 
 

@@ -127,8 +127,7 @@ public class QAntAPI implements IQAntApi {
 			return null;
 		}
 
-		boolean dc = qant.getUserManager().getUserByChannel(sender) != null;
-		if (dc) {
+		if (qant.getUserManager().getUserByChannel(sender) != null) {
 			sendError(zoneName, response, QAntErrorCode.LOGIN_ALREADY_LOGGED);
 			QAntTracer.info(this.getClass(), "Bad login request, Zone: " + zoneName + ", reason: "
 					+ QAntErrorCode.LOGIN_ALREADY_LOGGED.getName() + ". Requested by: " + sender);
@@ -141,16 +140,10 @@ public class QAntAPI implements IQAntApi {
 		user.setConnected(true);
 		user.setFullName(paramsOut.getUtfString("fn"));
 
-		Long userId = paramsOut.getLong("creantUserId");
-		if (userId != null) {
-			user.setCreantsUserId(userId);
-			resObj.putLong("uid", userId);
-		}
-
-		zone.login(user);
-
+		resObj.putLong("uid", paramsOut.getLong("accountId"));
 		resObj.putUtfString("un", user.getName());
 		resObj.putUtfString("zn", zoneName);
+		zone.login(user);
 
 		if (paramsOut != null && paramsOut.size() > 0) {
 			resObj.putQAntObject("p", paramsOut);

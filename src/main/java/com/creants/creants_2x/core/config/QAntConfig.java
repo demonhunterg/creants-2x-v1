@@ -10,6 +10,7 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 
 import com.creants.creants_2x.core.exception.QAntException;
+import com.creants.creants_2x.core.service.WebService;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 
 /**
@@ -46,6 +47,7 @@ public class QAntConfig implements IConfigurator {
 			while (sr.hasNext()) {
 				try {
 					ZoneSettings zone = mapper.readValue(sr, ZoneSettings.class);
+					WebService.getInstance().checkValid(zone.getLicensekey());
 					settings.add(zone);
 				} catch (NoSuchElementException e) {
 
