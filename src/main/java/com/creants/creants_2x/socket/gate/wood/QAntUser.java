@@ -11,6 +11,8 @@ import java.util.concurrent.ConcurrentMap;
 import com.creants.creants_2x.QAntServer;
 import com.creants.creants_2x.core.entities.Room;
 import com.creants.creants_2x.core.entities.Zone;
+import com.creants.creants_2x.mmo.BaseMMOItem;
+import com.creants.creants_2x.mmo.MMORoom;
 import com.creants.creants_2x.socket.gate.IQAntUser;
 import com.creants.creants_2x.socket.gate.entities.IQAntArray;
 import com.creants.creants_2x.socket.gate.entities.QAntArray;
@@ -79,6 +81,41 @@ public class QAntUser implements IQAntUser {
 	@Override
 	public Zone getZone() {
 		return this.currentZone;
+	}
+
+
+	@Override
+	public void setLastProxyList(List<QAntUser> proxyList) {
+	}
+
+
+	@Override
+	public List<QAntUser> getLastProxyList() {
+		return null;
+	}
+
+
+	@Override
+	public void setLastMMOItemsList(List<BaseMMOItem> mmoItemsList) {
+	}
+
+
+	@Override
+	public List<BaseMMOItem> getLastMMOItemsList() {
+		return null;
+	}
+
+
+	@Override
+	public MMORoom getCurrentMMORoom() {
+		Room mmoRoom = null;
+		for (Room r : getJoinedRooms()) {
+			if (r instanceof MMORoom) {
+				mmoRoom = r;
+				break;
+			}
+		}
+		return (MMORoom) mmoRoom;
 	}
 
 

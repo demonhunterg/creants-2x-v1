@@ -23,6 +23,7 @@ import com.creants.creants_2x.core.managers.QAntZoneManager;
 import com.creants.creants_2x.core.service.IService;
 import com.creants.creants_2x.core.util.AppConfig;
 import com.creants.creants_2x.core.util.QAntTracer;
+import com.creants.creants_2x.core.util.TaskScheduler;
 import com.creants.creants_2x.socket.channels.DefaultChannelManager;
 import com.creants.creants_2x.socket.channels.IChannelManager;
 import com.creants.creants_2x.socket.codec.MessageDecoder;
@@ -71,6 +72,7 @@ public class QAntServer {
 	private IZoneManager zoneManager;
 	private IConfigurator qantConfig;
 	private IDGenerator userIDGenerator;
+	private TaskScheduler taskScheduler;
 
 
 	public static QAntServer getInstance() {
@@ -86,6 +88,7 @@ public class QAntServer {
 		messageHandler = new MessageHandler();
 		services = new ServiceProvider();
 		userIDGenerator = services.getUIDGenerator();
+		taskScheduler = new TaskScheduler(1);
 	}
 
 
@@ -209,6 +212,11 @@ public class QAntServer {
 
 	public IUserManager getUserManager() {
 		return userManager;
+	}
+
+
+	public TaskScheduler getTaskScheduler() {
+		return taskScheduler;
 	}
 
 

@@ -12,6 +12,7 @@ public class APIManager implements IService {
 	private final String serviceName = "APIManager";
 	private QAntServer qant;
 	private IQAntApi api;
+	private IQAntMMOApi mmoApi;
 
 
 	@Override
@@ -24,6 +25,11 @@ public class APIManager implements IService {
 
 	public IQAntApi getQAntApi() {
 		return api;
+	}
+
+
+	public IQAntMMOApi getMMOApi() {
+		return mmoApi;
 	}
 
 
