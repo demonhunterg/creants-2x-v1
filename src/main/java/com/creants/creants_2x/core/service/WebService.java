@@ -5,7 +5,7 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.Enumeration;
 
-import javax.ws.rs.core.MediaType;
+import static javax.ws.rs.core.MediaType.*;
 import javax.ws.rs.core.MultivaluedMap;
 
 import com.sun.jersey.api.client.Client;
@@ -48,8 +48,7 @@ public class WebService {
 		formData.add("key", KEY);
 		formData.add("token", token);
 
-		ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON).post(ClientResponse.class, formData);
-
+		ClientResponse response = webResource.accept(APPLICATION_JSON).post(ClientResponse.class, formData);
 		if (response.getStatus() != 200) {
 			throw new RuntimeException("Failed : HTTP error code : " + response.getStatus());
 		}
@@ -59,22 +58,22 @@ public class WebService {
 
 
 	public String checkValid(String svid) {
-		WebResource webResource = Client.create().resource(LICENSE_URL);
-		MultivaluedMap<String, String> formData = new MultivaluedMapImpl();
-		String vmid = getVMID();
-		formData.add("mid", vmid);
-		formData.add("svid", svid);
-		String hostAddress = getSystemIP();
-		formData.add("ip", hostAddress);
-
 		String entity = "";
 		try {
-			ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON).post(ClientResponse.class,
-					formData);
+			WebResource webResource = Client.create().resource(LICENSE_URL);
+			MultivaluedMap<String, String> formData = new MultivaluedMapImpl();
+			String vmid = getVMID();
+			String hostAddress = getSystemIP();
+			formData.add("mid", vmid);
+			formData.add("svid", svid);
+			formData.add("ip", hostAddress);
+
+			ClientResponse response = webResource.accept(APPLICATION_JSON).post(ClientResponse.class, formData);
 			entity = response.getEntity(String.class);
 			if (response.getStatus() != 200) {
-				throw new RuntimeException("Failed : HTTP error code : " + response.getStatus());
+				System.exit(0);
 			}
+
 			JSONObject jo = JSONObject.fromObject(entity);
 			if (!jo.getString("vmid").equals(hostAddress)) {
 				System.exit(0);
@@ -98,7 +97,7 @@ public class WebService {
 		MultivaluedMap<String, String> formData = new MultivaluedMapImpl();
 		formData.add("uid", uid);
 
-		ClientResponse response = webResource.accept(MediaType.TEXT_PLAIN).header("key", KEY).post(ClientResponse.class,
+		ClientResponse response = webResource.accept(TEXT_PLAIN).header("key", KEY).post(ClientResponse.class,
 				formData);
 
 		if (response.getStatus() != 200) {

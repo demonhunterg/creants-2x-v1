@@ -22,15 +22,19 @@ import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.stream.ChunkedNioFile;
 
 /**
+ * https://alvinalexander.com/java/jwarehouse/netty-4.1/example/src/main/java/io/netty/example/http/websocketx/benchmarkserver/WebSocketServerHandler.java.shtml
+ * 
  * @author LamHa
  *
  */
 public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 	private final String wsUri;
 
+
 	public HttpRequestHandler(String wsUri) {
 		this.wsUri = wsUri;
 	}
+
 
 	@SuppressWarnings("resource")
 	@Override
@@ -63,10 +67,12 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
 		}
 	}
 
+
 	private static void send100Continue(ChannelHandlerContext ctx) {
 		FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.CONTINUE);
 		ctx.writeAndFlush(response);
 	}
+
 
 	@Override
 	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
