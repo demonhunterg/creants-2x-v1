@@ -20,7 +20,7 @@ public class MMOItemManager implements IMMOItemManager {
 	private final MMORoom owner;
 
 
-	public MMOItemManager(Vec3D aoi, final MMORoom owner) {
+	public MMOItemManager(Vec3D aoi, MMORoom owner) {
 		this.owner = owner;
 		this.aoi = aoi;
 		if (aoi.isFloat()) {

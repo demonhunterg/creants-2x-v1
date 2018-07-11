@@ -48,11 +48,6 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.util.concurrent.GenericFutureListener;
-
-/**
- * @author LamHM
- *
- */
 /**
  * @author LamHM
  *

@@ -14,6 +14,8 @@ import com.creants.creants_2x.core.util.IPlayerIdGenerator;
 import com.creants.creants_2x.socket.gate.entities.IQAntArray;
 import com.creants.creants_2x.socket.gate.wood.QAntUser;
 
+import io.netty.util.AttributeKey;
+
 /**
  * @author LamHM
  *
@@ -28,6 +30,8 @@ public class MMORoom extends QAntRoom {
 	private int userLimboMaxSeconds;
 	private ScheduledFuture<?> limboCleanerTask;
 	private boolean sendAOIEntryPoint;
+	private static final AttributeKey<PreviousMMORoomState> PREVIOUS_MMO_ROOM_STATE = AttributeKey
+			.valueOf("PreviousMMORoomState");
 
 
 	public MMORoom(String name, Vec3D aoi, int updateMillis) {
@@ -57,14 +61,10 @@ public class MMORoom extends QAntRoom {
 			if (user.getLastProxyList() != null) {
 				updateManager.addBatchToUpdate(user.getLastProxyList());
 			} else {
-				// FIXME
-				// PreviousMMORoomState prevState = (PreviousMMORoomState)
-				// user.getSession()
-				// .getSystemProperty("PreviousMMORoomState");
-				// if (prevState != null && prevState.getRoomId() ==
-				// this.getId()) {
-				// updateManager.addBatchToUpdate(prevState.getProxyList());
-				// }
+				PreviousMMORoomState prevState = user.getChannel().attr(PREVIOUS_MMO_ROOM_STATE).get();
+				if (prevState != null && prevState.getRoomId() == this.getId()) {
+					updateManager.addBatchToUpdate(prevState.getProxyList());
+				}
 			}
 		} catch (IllegalStateException err) {
 			throw new IllegalStateException(
@@ -345,4 +345,5 @@ public class MMORoom extends QAntRoom {
 			return this.roomId;
 		}
 	}
+
 }

@@ -13,6 +13,7 @@ public class AppConfig {
 	private static int socketPort;
 	private static String websocketIp;
 	private static int websocketPort;
+	private static String graphApi;
 
 
 	public static void init(String configPath) {
@@ -27,6 +28,7 @@ public class AppConfig {
 
 		socketIp = prop.getProperty("socket.ip", "localhost");
 		socketPort = Integer.parseInt(prop.getProperty("socket.port", "8888"));
+		graphApi = prop.getProperty("graph.api", "localhost");
 		websocketIp = prop.getProperty("websocket.ip", "localhost");
 		websocketPort = Integer.parseInt(prop.getProperty("websocket.port", "8889"));
 	}
@@ -49,6 +51,11 @@ public class AppConfig {
 
 	public static int getWebsocketPort() {
 		return websocketPort;
+	}
+
+
+	public static String getGraphApi() {
+		return graphApi;
 	}
 
 }

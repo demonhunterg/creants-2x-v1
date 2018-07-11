@@ -11,8 +11,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import com.creants.creants_2x.socket.gate.protocol.serialization.DefaultQAntDataSerializer;
 import com.creants.creants_2x.socket.gate.protocol.serialization.DefaultObjectDumpFormatter;
+import com.creants.creants_2x.socket.gate.protocol.serialization.DefaultQAntDataSerializer;
 import com.creants.creants_2x.socket.gate.protocol.serialization.IQAntDataSerializer;
 import com.creants.creants_2x.socket.util.ByteUtils;
 
@@ -43,6 +43,13 @@ public class QAntArray implements IQAntArray {
 
 	public static QAntArray newFromJsonData(String jsonStr) {
 		return (QAntArray) DefaultQAntDataSerializer.getInstance().json2array(jsonStr);
+	}
+
+
+	public static QAntArray newFromListObject(Collection<?> objList) {
+		QAntArray result = newInstance();
+		objList.stream().forEach(obj -> result.addQAntObject(QAntObject.newFromObject(obj)));
+		return result;
 	}
 
 

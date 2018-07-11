@@ -8,6 +8,7 @@ import java.util.Enumeration;
 import static javax.ws.rs.core.MediaType.*;
 import javax.ws.rs.core.MultivaluedMap;
 
+import com.creants.creants_2x.core.util.AppConfig;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
@@ -21,9 +22,6 @@ import net.sf.json.JSONObject;
  */
 public class WebService {
 	private static final String KEY = "1|WqRVclir6nj4pk3PPxDCzqPTXl3J";
-	private static final String GRAPH_API = "http://api.creants.net:9393/internal/";
-	// private static final String GRAPH_API =
-	// "http://localhost:9393/internal/";
 	private static final String LICENSE_URL = "http://license4j-muheroes.1d35.starter-us-east-1.openshiftapps.com/";
 	// private static final String LICENSE_URL = "http://localhost:9393/";
 	private static WebService instance;
@@ -42,11 +40,27 @@ public class WebService {
 
 
 	public String verify(String token) {
-		WebResource webResource = Client.create().resource(GRAPH_API + "verify");
+		WebResource webResource = Client.create().resource(AppConfig.getGraphApi() + "/internal/" + "verify");
 
 		MultivaluedMap<String, String> formData = new MultivaluedMapImpl();
 		formData.add("key", KEY);
 		formData.add("token", token);
+
+		ClientResponse response = webResource.accept(APPLICATION_JSON).post(ClientResponse.class, formData);
+		if (response.getStatus() != 200) {
+			throw new RuntimeException("Failed : HTTP error code : " + response.getStatus());
+		}
+
+		return response.getEntity(String.class);
+	}
+
+
+	public String linkFb(String fbToken) {
+		WebResource webResource = Client.create().resource(AppConfig.getGraphApi() + "/internal/" + "fb");
+
+		MultivaluedMap<String, String> formData = new MultivaluedMapImpl();
+		formData.add("app_id", String.valueOf(1));
+		formData.add("fb_token", fbToken);
 
 		ClientResponse response = webResource.accept(APPLICATION_JSON).post(ClientResponse.class, formData);
 		if (response.getStatus() != 200) {
@@ -93,7 +107,7 @@ public class WebService {
 
 
 	public String getUser(String uid, String key) {
-		WebResource webResource = Client.create().resource(GRAPH_API + "user");
+		WebResource webResource = Client.create().resource(AppConfig.getGraphApi() + "/internal/" + "user");
 		MultivaluedMap<String, String> formData = new MultivaluedMapImpl();
 		formData.add("uid", uid);
 

@@ -69,8 +69,6 @@ public class AdminToolService implements IService {
 		}
 		adminZone.setExtension(this.adminExtension);
 		extensionManager.addExtension(this.adminExtension);
-		System.out.println("[ERROR] *************************");
-		System.out.println(zoneManager.toString());
 		zoneManager.addZone(adminZone);
 		adminExtension.init();
 	}
