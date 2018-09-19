@@ -33,7 +33,7 @@ public interface IChannelManager extends IService {
 	Channel getChannelById(int id);
 
 
-	int getHighestCCS();
+	int getHighestCCU();
 
 
 	List<Channel> getAllLocalChannels();

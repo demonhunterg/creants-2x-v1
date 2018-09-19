@@ -17,9 +17,9 @@ public class DefaultControllerManager implements IControllerManager {
 		SystemController systemController = new SystemController();
 		ExtensionController extensionController = new ExtensionController();
 
-		systemController.setThreadPoolSize(1);
+		systemController.setThreadPoolSize(50);
 		systemController.setMaxQueueSize(50);
-		extensionController.setThreadPoolSize(1);
+		extensionController.setThreadPoolSize(50);
 		extensionController.setMaxQueueSize(50);
 
 		controllers.put((byte) 0, systemController);

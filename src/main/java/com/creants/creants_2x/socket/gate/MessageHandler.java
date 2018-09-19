@@ -5,10 +5,10 @@ import java.util.concurrent.atomic.AtomicLong;
 import com.creants.creants_2x.QAntServer;
 import com.creants.creants_2x.core.api.IQAntApi;
 import com.creants.creants_2x.core.controllers.DefaultControllerManager;
-import com.creants.creants_2x.core.controllers.IController;
 import com.creants.creants_2x.core.controllers.IControllerManager;
 import com.creants.creants_2x.core.util.QAntTracer;
 import com.creants.creants_2x.socket.channels.DefaultChannelManager;
+import com.creants.creants_2x.socket.channels.IChannelManager;
 import com.creants.creants_2x.socket.gate.entities.IQAntObject;
 import com.creants.creants_2x.socket.io.IRequest;
 import com.creants.creants_2x.socket.io.Request;
@@ -35,6 +35,7 @@ public class MessageHandler extends SimpleChannelInboundHandler<IQAntObject> {
 	private static final String PARAM_ID = "p";
 
 	private static final AtomicLong nextSessionId = new AtomicLong(System.currentTimeMillis());
+	private static final IChannelManager channelHandler = DefaultChannelManager.getInstance();
 
 	protected IControllerManager controllerManager;
 	protected IQAntApi qantApi;
@@ -45,9 +46,9 @@ public class MessageHandler extends SimpleChannelInboundHandler<IQAntObject> {
 
 
 	@Override
-	public void channelActive(final ChannelHandlerContext ctx) throws Exception {
+	public void channelActive(ChannelHandlerContext ctx) throws Exception {
 		synchronized (nextSessionId) {
-			DefaultChannelManager.getInstance().addChannel(ctx.channel());
+			channelHandler.addChannel(ctx.channel());
 			qantApi.getResponseAPI().notifyHandshake(ctx.channel());
 		}
 
@@ -105,8 +106,7 @@ public class MessageHandler extends SimpleChannelInboundHandler<IQAntObject> {
 
 	protected void dispatchRequestToController(IRequest request, byte controllerId) {
 		try {
-			IController controller = controllerManager.getControllerById(controllerId);
-			controller.enqueueRequest(request);
+			controllerManager.getControllerById(controllerId).enqueueRequest(request);
 		} catch (Exception err) {
 			QAntTracer.warn(this.getClass(), "Can't handle this request! The related controller is not found: "
 					+ controllerId + ", Request: " + request);
@@ -121,10 +121,7 @@ public class MessageHandler extends SimpleChannelInboundHandler<IQAntObject> {
 		// ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
 	}
 
-	
-	
 
-	
 	@Override
 	public void channelInactive(ChannelHandlerContext ctx) throws Exception {
 		System.out.println("-------------------------- channelInactive -----------------------------");
@@ -139,8 +136,6 @@ public class MessageHandler extends SimpleChannelInboundHandler<IQAntObject> {
 		ctx.close();
 	}
 
-	
-	
 
 	@Override
 	public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {

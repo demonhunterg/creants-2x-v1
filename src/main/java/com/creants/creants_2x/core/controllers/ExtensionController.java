@@ -45,14 +45,14 @@ public class ExtensionController extends AbstractController {
 
 	@Override
 	public void processRequest(IRequest request) throws Exception {
-		QAntTracer.debug(this.getClass(), request.toString());
+		QAntTracer.doDumpMsg(this.getClass(), request.toString());
 		long t1 = System.nanoTime();
 		QAntUser sender = qant.getUserManager().getUserByChannel(request.getSender());
-		if (sender == null) {
+		if (sender == null)
 			throw new QAntExtensionException("Extension Request refused. Sender is not a User: " + request.getSender());
-		}
+
 		IQAntObject reqObj = request.getContent();
-		QAntTracer.debug(this.getClass(), reqObj.getDump());
+		QAntTracer.doDumpMsg(this.getClass(), reqObj.getDump());
 
 		String cmd = reqObj.getUtfString(KEY_EXT_CMD);
 		if (StringUtils.isBlank(cmd)) {
@@ -61,9 +61,9 @@ public class ExtensionController extends AbstractController {
 		}
 
 		int roomId = -1;
-		if (reqObj.containsKey(KEY_ROOMID)) {
+		if (reqObj.containsKey(KEY_ROOMID))
 			roomId = reqObj.getInt(KEY_ROOMID);
-		}
+
 		IQAntObject params = reqObj.getQAntObject(KEY_EXT_PARAMS);
 		Zone zone = sender.getZone();
 		IQAntExtension extension = null;
@@ -96,9 +96,8 @@ public class ExtensionController extends AbstractController {
 			QAntTracer.error(this.getClass(), QAntTracer.getTraceMessage(e));
 		}
 
-		long t2 = System.nanoTime();
-		QAntTracer.debug(this.getClass(), "[" + sender.getName() + "]" + "Extension call <" + cmd + ">  executed in: "
-				+ (t2 - t1) / 1000000 + " milisecond");
+		QAntTracer.doLagMonitor(this.getClass(), "[" + sender.getName() + "-" + sender.getFullName() + "]"
+				+ "Extension call <" + cmd + ">  executed in: " + (System.nanoTime() - t1) / 1000000 + " milisecond");
 	}
 
 }

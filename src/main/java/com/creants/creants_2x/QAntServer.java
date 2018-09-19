@@ -48,6 +48,7 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.util.concurrent.GenericFutureListener;
+
 /**
  * @author LamHM
  *
@@ -91,12 +92,13 @@ public class QAntServer {
 		QAntTracer.debug(this.getClass(), "======================== QUEEN ANT SOCKET =====================");
 		initialize();
 
-		EventLoopGroup bossGroup = new NioEventLoopGroup();
+		//Sharing the same EventLoopGroup allows to keep the resource usage (like Thread-usage) to a minimum
+		//tham khao http://normanmaurer.me/presentations/2014-facebook-eng-netty/slides.html#30.0
 		EventLoopGroup workerGroup = new NioEventLoopGroup();
 		try {
 			ServerBootstrap bootstrap = new ServerBootstrap();
 			// Channel có thể hiểu như một socket connection
-			bootstrap.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class)
+			bootstrap.group(workerGroup).channel(NioServerSocketChannel.class)
 					.childHandler(buildSocketChannelInitializer())
 					.childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
 					.option(ChannelOption.SO_BACKLOG, 100).option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
@@ -116,10 +118,10 @@ public class QAntServer {
 			});
 
 			ServerBootstrap websocketBoostrap = new ServerBootstrap();
-			websocketBoostrap.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class)
+			websocketBoostrap.group(workerGroup).channel(NioServerSocketChannel.class)
 					.childHandler(buildWebsocketChannelInitializer())
 					.childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-					.option(ChannelOption.SO_BACKLOG, 100).option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
+					.option(ChannelOption.SO_BACKLOG, 100).option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 50000)
 					.childOption(ChannelOption.SO_KEEPALIVE, true);
 
 			ChannelFuture websocketChannelFuture = websocketBoostrap
@@ -147,7 +149,6 @@ public class QAntServer {
 
 		} finally {
 			workerGroup.shutdownGracefully();
-			bossGroup.shutdownGracefully();
 		}
 
 	}

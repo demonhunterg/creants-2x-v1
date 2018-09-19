@@ -98,7 +98,9 @@ public class ResponseApi implements IResponseApi {
 		IResponse response = new Response();
 		response.setId(SystemRequest.PingPong.getId());
 		response.setTargetController(DefaultConstants.CORE_SYSTEM_CONTROLLER_ID);
-		response.setContent(new QAntObject());
+		QAntObject qAntObject = QAntObject.newInstance();
+		qAntObject.putLong("svTime", System.currentTimeMillis());
+		response.setContent(qAntObject);
 		response.setRecipients(recipient);
 		response.write();
 	}

@@ -67,22 +67,27 @@ public class Response extends AbstractEngineMessage implements IResponse {
 
 	@Override
 	public void write() {
-		final IQAntObject packet = QAntObject.newInstance();
-		packet.putByte("c", getTargetController());
-		packet.putShort("a", getId());
-		packet.putQAntObject("p", getContent());
+		IQAntObject msg = QAntObject.newInstance();
+		msg.putByte("c", getTargetController());
+		msg.putShort("a", getId());
+		msg.putQAntObject("p", getContent());
 
 		for (Channel channel : channels) {
-			ChannelFuture future = channel.writeAndFlush(packet);
-			future.addListener(new ChannelFutureListener() {
+			channel.writeAndFlush(msg).addListener(new ChannelFutureListener() {
 				@Override
 				public void operationComplete(ChannelFuture future) throws Exception {
 					if (getId() != SystemRequest.PingPong.getId()) {
-						QAntTracer.debug(this.getClass(), "- Send:" + packet.getDump());
+						QAntTracer.doDumpMsg(this.getClass(), "- Send:" + msg.getDump());
 					}
 				}
 			});
 		}
+
+		// channels.stream().map(channel -> channel.writeAndFlush(msg))
+		// .filter(chanelFut -> getId() !=
+		// SystemRequest.PingPong.getId()).forEach(cf -> cf
+		// .addListener(future -> QAntTracer.doDumpMsg(this.getClass(), "-
+		// Send:" + msg.getDump())));
 
 	}
 
@@ -92,4 +97,10 @@ public class Response extends AbstractEngineMessage implements IResponse {
 
 	}
 
+	@SuppressWarnings("unused")
+	private static final class ListenerImpl implements ChannelFutureListener {
+		public void operationComplete(ChannelFuture future) throws Exception {
+
+		}
+	}
 }

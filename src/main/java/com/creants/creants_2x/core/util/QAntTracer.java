@@ -12,17 +12,32 @@ import org.apache.logging.log4j.Logger;
 public class QAntTracer {
 	private static final Logger TRACE_LOG = LogManager.getLogger("TraceLogger");
 	private static final Logger ERROR_LOG = LogManager.getLogger("ErrorLogger");
+	private static final Logger LAG_MONITOR_LOG = LogManager.getLogger("LagMonitorLogger");
+	private static final Logger DUMP_LOG = LogManager.getLogger("DumpLogger");
+
 
 	public static void debug(Class<?> clazz, Object... msgs) {
-		if (TRACE_LOG.isDebugEnabled()) {
+		if (TRACE_LOG.isDebugEnabled())
 			TRACE_LOG.debug(getTraceMessage(clazz, msgs));
-		}
-
 	}
+
+
+	public static void doLagMonitor(Class<?> clazz, Object... msgs) {
+		if (LAG_MONITOR_LOG.isDebugEnabled())
+			LAG_MONITOR_LOG.debug(getTraceMessage(clazz, msgs));
+	}
+
+
+	public static void doDumpMsg(Class<?> clazz, Object... msgs) {
+		if (DUMP_LOG.isDebugEnabled())
+			DUMP_LOG.debug(getTraceMessage(clazz, msgs));
+	}
+
 
 	public static void info(Class<?> clazz, Object... msgs) {
 		TRACE_LOG.info(getTraceMessage(clazz, msgs));
 	}
+
 
 	/**
 	 * Log thông tin lỗi
@@ -36,6 +51,7 @@ public class QAntTracer {
 		ERROR_LOG.error(getTraceMessage(clazz, msgs));
 	}
 
+
 	/**
 	 * Log thông tin cảnh báo
 	 * 
@@ -48,6 +64,7 @@ public class QAntTracer {
 		TRACE_LOG.warn(getTraceMessage(clazz, msgs));
 	}
 
+
 	private static String getTraceMessage(Class<?> clazz, Object[] msgs) {
 		StringBuilder traceMsg = new StringBuilder().append("{").append(clazz.getSimpleName()).append("}: ");
 		Object[] arrayOfObject;
@@ -58,6 +75,7 @@ public class QAntTracer {
 
 		return traceMsg.toString();
 	}
+
 
 	public static String getTraceMessage(Exception throwable) {
 		StringWriter stringWriter = new StringWriter();

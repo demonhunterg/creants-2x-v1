@@ -521,7 +521,7 @@ public class QAntObject implements IQAntObject {
 		}
 		if (value == null) {
 			throw new IllegalArgumentException(
-					"CASObject requires a non-null value! If you need to add a null use the putNull() method.");
+					"CASObject requires a non-null value! If you need to add a null use the putNull() method. key:" + key);
 		}
 		if (value instanceof QAntDataWrapper) {
 			dataHolder.put(key, (QAntDataWrapper) value);

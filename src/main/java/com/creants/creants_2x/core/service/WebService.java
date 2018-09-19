@@ -4,15 +4,20 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.Enumeration;
+import java.util.List;
 
-import static javax.ws.rs.core.MediaType.*;
-import javax.ws.rs.core.MultivaluedMap;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.fluent.Executor;
+import org.apache.http.client.fluent.Form;
+import org.apache.http.client.fluent.Request;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.util.EntityUtils;
 
 import com.creants.creants_2x.core.util.AppConfig;
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.core.util.MultivaluedMapImpl;
+import com.creants.creants_2x.core.util.QAntTracer;
 
 import net.sf.json.JSONObject;
 
@@ -22,9 +27,17 @@ import net.sf.json.JSONObject;
  */
 public class WebService {
 	private static final String KEY = "1|WqRVclir6nj4pk3PPxDCzqPTXl3J";
-	private static final String LICENSE_URL = "http://license4j-muheroes.1d35.starter-us-east-1.openshiftapps.com/";
-	// private static final String LICENSE_URL = "http://localhost:9393/";
+	private static final String LICENSE_URL = "http://35.187.232.137";
+	private static final String GRAPH_URL_INTERNAL;
+	private static final int CONNECT_TIMEOUT = 5000;
+	private static final int SOCKET_TIMEOUT = 5000;
+	private static final int MAX_CONNECTION_POOL = 100;
 	private static WebService instance;
+	private CloseableHttpClient client;
+
+	static {
+		GRAPH_URL_INTERNAL = AppConfig.getGraphApi() + "/internal/";
+	}
 
 
 	public static WebService getInstance() {
@@ -36,110 +49,67 @@ public class WebService {
 
 
 	private WebService() {
+		PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
+		client = HttpClients.custom().setConnectionManager(cm).build();
+		cm.setDefaultMaxPerRoute(MAX_CONNECTION_POOL);
 	}
 
 
 	public String verify(String token) {
-		WebResource webResource = Client.create().resource(AppConfig.getGraphApi() + "/internal/" + "verify");
+		return doPostInternal(Form.form().add("key", KEY).add("token", token).build(), "verify");
 
-		MultivaluedMap<String, String> formData = new MultivaluedMapImpl();
-		formData.add("key", KEY);
-		formData.add("token", token);
-
-		ClientResponse response = webResource.accept(APPLICATION_JSON).post(ClientResponse.class, formData);
-		if (response.getStatus() != 200) {
-			throw new RuntimeException("Failed : HTTP error code : " + response.getStatus());
-		}
-
-		return response.getEntity(String.class);
 	}
 
 
 	public String linkFb(String fbToken) {
-		WebResource webResource = Client.create().resource(AppConfig.getGraphApi() + "/internal/" + "fb");
-
-		MultivaluedMap<String, String> formData = new MultivaluedMapImpl();
-		formData.add("app_id", String.valueOf(1));
-		formData.add("fb_token", fbToken);
-
-		ClientResponse response = webResource.accept(APPLICATION_JSON).post(ClientResponse.class, formData);
-		if (response.getStatus() != 200) {
-			throw new RuntimeException("Failed : HTTP error code : " + response.getStatus());
-		}
-
-		return response.getEntity(String.class);
+		return doPostInternal(Form.form().add("app_id", String.valueOf(1)).add("fb_token", fbToken).build(), "fb");
 	}
 
 
-	public String checkValid(String svid) {
-		String entity = "";
+	private String doPostInternal(List<NameValuePair> formReq, String action) {
+		return doPostRequest(formReq, GRAPH_URL_INTERNAL + action);
+	}
+
+
+	public void checkValid(String svid) {
 		try {
-			WebResource webResource = Client.create().resource(LICENSE_URL);
-			MultivaluedMap<String, String> formData = new MultivaluedMapImpl();
-			String vmid = getVMID();
-			String hostAddress = getSystemIP();
-			formData.add("mid", vmid);
-			formData.add("svid", svid);
-			formData.add("ip", hostAddress);
+			String verificationString = doPostRequest(
+					Form.form().add("mid", getVMID()).add("svid", svid).add("ip", getSystemIP()).build(), LICENSE_URL);
 
-			ClientResponse response = webResource.accept(APPLICATION_JSON).post(ClientResponse.class, formData);
-			entity = response.getEntity(String.class);
-			if (response.getStatus() != 200) {
+			JSONObject jo = JSONObject.fromObject(verificationString);
+			if (!jo.getString("vmid").equals("test"))
 				System.exit(0);
-			}
-
-			JSONObject jo = JSONObject.fromObject(entity);
-			if (!jo.getString("vmid").equals(hostAddress)) {
-				System.exit(0);
-			}
 		} catch (Exception e) {
 			System.exit(0);
 		}
 
-		return entity;
+	}
+
+
+	private String doPostRequest(List<NameValuePair> formReq, String url) {
+		int statusCode = -1;
+		try {
+			Request bodyForm = Request.Post(url).addHeader("Content-Type", "application/x-www-form-urlencoded")
+					.connectTimeout(CONNECT_TIMEOUT).socketTimeout(SOCKET_TIMEOUT).bodyForm(formReq);
+
+			HttpResponse httpResponse = Executor.newInstance(client).execute(bodyForm).returnResponse();
+
+			statusCode = httpResponse.getStatusLine().getStatusCode();
+			if (statusCode == 200)
+				return EntityUtils.toString(httpResponse.getEntity(), "UTF-8");
+
+		} catch (Exception e) {
+			QAntTracer.error(this.getClass(),
+					"doPostRequest! url: " + url + ", tracer:" + QAntTracer.getTraceMessage(e));
+		}
+
+		throw new RuntimeException("Failed : HTTP error code " + statusCode + ", url:" + url);
 	}
 
 
 	public static String getVMID() {
 		String s = (new java.rmi.dgc.VMID()).toString();
 		return s.substring(0, s.length() - 6);
-	}
-
-
-	public String getUser(String uid, String key) {
-		WebResource webResource = Client.create().resource(AppConfig.getGraphApi() + "/internal/" + "user");
-		MultivaluedMap<String, String> formData = new MultivaluedMapImpl();
-		formData.add("uid", uid);
-
-		ClientResponse response = webResource.accept(TEXT_PLAIN).header("key", KEY).post(ClientResponse.class,
-				formData);
-
-		if (response.getStatus() != 200) {
-			throw new RuntimeException("Failed : HTTP error code : " + response.getStatus());
-		}
-
-		return response.getEntity(String.class);
-	}
-
-	class License {
-		private String vmip;
-
-
-		public String getVmip() {
-			return vmip;
-		}
-
-
-		public void setVmip(String vmip) {
-			this.vmip = vmip;
-		}
-
-
-		@Override
-		public String toString() {
-			return "{vmid:" + vmip + "}";
-		}
-
 	}
 
 

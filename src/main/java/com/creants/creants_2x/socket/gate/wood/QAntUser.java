@@ -128,6 +128,11 @@ public class QAntUser implements IQAntUser {
 	}
 
 
+	/**
+	 * Lấy tất cả playerId của người chơi đang tham gia trong các room
+	 * 
+	 * @return
+	 */
 	public Map<Room, Integer> getPlayerIds() {
 		return null;
 	}

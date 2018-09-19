@@ -23,7 +23,7 @@ public final class DefaultChannelManager implements IChannelManager {
 	private final List<Channel> localChannels;
 	private final ConcurrentMap<Integer, Channel> localChannelsById;
 	private String serviceName;
-	private int highestCCS;
+	private int highestCCU;
 	private final AtomicInteger idGenerator;
 
 
@@ -37,7 +37,7 @@ public final class DefaultChannelManager implements IChannelManager {
 
 	private DefaultChannelManager() {
 		this.serviceName = "DefaultSessionManager";
-		this.highestCCS = 0;
+		this.highestCCU = 0;
 		this.channelsById = new ConcurrentHashMap<Integer, Channel>();
 		this.localChannels = new ArrayList<Channel>();
 		this.localChannelsById = new ConcurrentHashMap<Integer, Channel>();
@@ -87,13 +87,11 @@ public final class DefaultChannelManager implements IChannelManager {
 		channel.attr(SESSION_ID).set(id);
 
 		localChannelsById.put(id, channel);
-		if (localChannels.size() > highestCCS) {
-			highestCCS = localChannels.size();
-		}
+		if (localChannels.size() > highestCCU)
+			highestCCU = localChannels.size();
 
-		QAntTracer.info(this.getClass(),
-				"Session created: " + channel + ", address: " + channel.localAddress().toString());
-
+		QAntTracer.info(this.getClass(), "Session created: " + channel + ", local address: "
+				+ channel.localAddress().toString() + ", remote addr: " + channel.remoteAddress().toString());
 	}
 
 
@@ -106,8 +104,7 @@ public final class DefaultChannelManager implements IChannelManager {
 			localChannels.remove(channel);
 		}
 
-		int id = channel.attr(SESSION_ID).get();
-		localChannelsById.remove(id);
+		localChannelsById.remove(channel.attr(SESSION_ID).get());
 		QAntTracer.info(this.getClass(), "Channel removed: " + channel);
 	}
 
@@ -115,9 +112,8 @@ public final class DefaultChannelManager implements IChannelManager {
 	@Override
 	public Channel removeChannel(int id) {
 		Channel channel = localChannelsById.get(id);
-		if (channel != null) {
+		if (channel != null)
 			removeChannel(channel);
-		}
 
 		return channel;
 	}
@@ -148,8 +144,8 @@ public final class DefaultChannelManager implements IChannelManager {
 
 
 	@Override
-	public int getHighestCCS() {
-		return highestCCS;
+	public int getHighestCCU() {
+		return highestCCU;
 	}
 
 

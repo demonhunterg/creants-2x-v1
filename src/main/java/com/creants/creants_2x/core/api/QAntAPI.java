@@ -78,6 +78,7 @@ public class QAntAPI implements IQAntApi {
 		zone.removeUser(user);
 		globalUserManager.removeUser(user);
 		responseAPI.notifyUserLost(user, joinedRooms);
+		
 		for (Room r : user.getCreatedRooms()) {
 			if (r != null && !joinedRooms.contains(r)) {
 				zone.checkAndRemove(r);

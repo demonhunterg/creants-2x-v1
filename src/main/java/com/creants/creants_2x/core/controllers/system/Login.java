@@ -40,12 +40,16 @@ public class Login extends BaseControllerCommand {
 
 		IQAntObject params = (IQAntObject) request.getAttribute(REQUEST_LOGIN_DATA_OUT);
 		if (params != null) {
+			Integer code = params.getInt("code");
+			if (code != 1)
+				return;
 			String newUserName = params.getUtfString(NEW_LOGIN_NAME);
-			if (newUserName != null) {
+			if (newUserName != null)
 				userName = newUserName;
-			}
+
+			api.login(request.getSender(), userName, password, zoneName, params);
 		}
-		api.login(request.getSender(), userName, password, zoneName, params);
+
 	}
 
 
