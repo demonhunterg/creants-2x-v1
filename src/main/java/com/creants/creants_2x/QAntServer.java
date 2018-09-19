@@ -92,12 +92,15 @@ public class QAntServer {
 		QAntTracer.debug(this.getClass(), "======================== QUEEN ANT SOCKET =====================");
 		initialize();
 
-		//Sharing the same EventLoopGroup allows to keep the resource usage (like Thread-usage) to a minimum
-		//tham khao http://normanmaurer.me/presentations/2014-facebook-eng-netty/slides.html#30.0
-		EventLoopGroup workerGroup = new NioEventLoopGroup();
+		// Sharing the same EventLoopGroup allows to keep the resource usage
+		// (like Thread-usage) to a minimum
+		// tham khao
+		// http://normanmaurer.me/presentations/2014-facebook-eng-netty/slides.html#30.0
+		EventLoopGroup workerGroup = new NioEventLoopGroup(10);
 		try {
 			ServerBootstrap bootstrap = new ServerBootstrap();
 			// Channel có thể hiểu như một socket connection
+			// ChannelOption.SO_BACKLOG=100 yêu cầu máy chủ từ chối các kết nối nếu nó đã có 100 hàng đợi.
 			bootstrap.group(workerGroup).channel(NioServerSocketChannel.class)
 					.childHandler(buildSocketChannelInitializer())
 					.childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
